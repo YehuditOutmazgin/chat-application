@@ -1,131 +1,112 @@
 # Chat Application
 
-A lightweight real-time chat application built with Python and Docker. The project includes HTML/CSS templates for the UI, a Python backend, and containerization assets for easy deployment. The repository structure includes `templates/`, `static/`, `rooms/`, `chatApp.py`, `requirements.txt`, a Dockerfile, and helper scripts. ([GitHub][1])
+A lightweight real-time chat application built with **Flask** (Python).  
+This app allows user registration, login, room creation, and simple text-based chatting with persistent room logs.  
 
 ## Features
 
-* Real-time messaging in browser
-* Multiple rooms (see `rooms/`)
-* Simple user management (see `users.csv`)
-* Containerized with Docker for consistent deploys
-* Clear separation of backend (`chatApp.py`) and frontend (`templates/`, `static/`)
+- User registration and login (stored in CSV with base64-encoded passwords)
+- Multiple chat rooms, created dynamically
+- Lobby page listing all available rooms
+- Room-based text chat (messages stored in `.txt` files)
+- Session management with Flask
+- Health endpoint (`/health`) for simple monitoring
+- Logout functionality
+- Minimal setup and easy to run locally or inside Docker
+
+---
 
 ## Project Structure
 
 ```
+
 .
-├─ chatApp.py
-├─ requirements.txt
-├─ dockerfile
-├─ dockerfiles/
-├─ auto.sh
-├─ users.csv
-├─ templates/        # Jinja/HTML views
-├─ static/           # CSS/JS/assets
-└─ rooms/            # Room definitions / data
-```
+├─ chatApp.py          # Main Flask app
+├─ requirements.txt    # Python dependencies
+├─ templates/          # HTML templates (register, login, lobby, chat)
+├─ static/             # CSS, JS, and assets
+├─ rooms/              # Chat room logs (\*.txt)
+├─ users.csv           # Registered users (username, encoded password)
+├─ dockerfile          # Container build file
+├─ dockerfiles/        # (Optional) extra docker configs
+└─ auto.sh             # Helper script
 
-> Browse the repo to see the latest layout and files. ([GitHub][1])
-
-## Getting Started (Local)
-
-### Prerequisites
-
-* Python 3.10+ and `pip`
-* (Optional) Docker 24+ and Docker Compose
-
-### 1) Clone and set up a virtual environment
-
-```bash
-git clone https://github.com/YehuditOutmazgin/chat-application.git
-cd chat-application
-
-# Create & activate venv (Linux/macOS)
-python3 -m venv .venv
-source .venv/bin/activate
-
-# On Windows (PowerShell):
-# python -m venv .venv
-# .\.venv\Scripts\Activate.ps1
-```
-
-### 2) Install dependencies
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### 3) Run the app
-
-```bash
-# Common options:
-# export FLASK_ENV=development
-# export PORT=5000
-
-python chatApp.py
-```
-
-Now open `http://localhost:5000/` in your browser (use the port the app prints if different).
-
-## Running with Docker
-
-Build and run the container:
-
-```bash
-# Build image using the project's Dockerfile
-docker build -t chat-app -f dockerfile .
-
-# Run container (map container port → host port as needed)
-docker run --name chat-app --rm -p 5000:5000 chat-app
-```
-
-Then visit `http://localhost:5000/`.
-
-> There’s also an `auto.sh` helper script in the repo you can adapt for your workflow. ([GitHub][1])
-
-## Configuration
-
-Environment variables you can use (if applicable in your setup):
-
-* `PORT` – Port for the web server (defaults to 5000 in many Flask apps)
-* `FLASK_ENV` – `development` or `production`
-
-> If you add more env vars (e.g., secrets, DB URLs), document them here.
-
-## Data & Users
-
-* `users.csv` can be used to seed or reference users for development/demos.
-* `rooms/` can define or persist chat-room info depending on your implementation.
-
-> Adjust these files/formats as your app evolves.
-
-## Development Tips
-
-* Keep UI assets in `static/` and views in `templates/`.
-* Add unit tests and a `Makefile`/`Justfile` if you plan to extend the project.
-* Consider adding linting/formatting (e.g., `ruff`, `black`) to streamline contributions.
-
-## Roadmap
-
-* Authentication hardening
-* Message persistence (DB)
-* Typing indicators / presence
-* CI workflow (GitHub Actions) and container publishing
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you’d like to change. Make sure to update tests and documentation as needed.
-
-## License
-
-Add a license file (e.g., MIT) if you intend for others to use or modify the project.
-
-## Acknowledgments
-
-* Python & Flask ecosystem
-* Docker community
+````
 
 ---
 
-[1]: https://github.com/YehuditOutmazgin/chat-application "GitHub - YehuditOutmazgin/chat-application: A project in git and docker"
+## Installation (Local)
+
+### Prerequisites
+- Python 3.10+
+- pip
+
+### Steps
+```bash
+# 1. Clone repository
+git clone https://github.com/YehuditOutmazgin/chat-application.git
+cd chat-application
+
+# 2. Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate   # Linux/macOS
+# .\.venv\Scripts\Activate.ps1   # Windows PowerShell
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Set environment variables
+export ROOM_FILES_PATH="rooms/"
+export USERS_PATH="users.csv"
+
+# 5. Run the app
+python chatApp.py
+````
+
+Now open your browser at:
+👉 `http://localhost:5000/`
+
+---
+
+## Running with Docker
+
+```bash
+# Build
+docker build -t chat-app -f dockerfile .
+
+# Run
+docker run --name chat-app --rm -p 5000:5000 \
+  -e ROOM_FILES_PATH="/app/rooms/" \
+  -e USERS_PATH="/app/users.csv" \
+  chat-app
+```
+
+---
+
+## Endpoints
+
+* `/register` → Register new user
+* `/login` → Login page
+* `/logout` → Logout and clear session
+* `/lobby` → Lobby and create rooms
+* `/chat/<room>` → Join a specific room
+* `/api/chat/<room>` → API to fetch/post messages
+
+  * `POST msg=<text>` → add message
+  * `POST ?clear=true` → clear messages of current user
+* `/health` → Health check (`ok,200`)
+
+---
+
+## Notes
+
+* Messages are stored in plain text files under `rooms/`.
+* Users are stored in `users.csv` with base64-encoded passwords (not secure, for demo only).
+* For production use, replace password storage with hashing (e.g., bcrypt) and use a proper database.
+
+---
+
+## License
+
+This project is provided **for private use only**.
+You may study and use it personally, but redistribution, modification, or commercial use is not permitted without explicit permission.
